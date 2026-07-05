@@ -3,23 +3,23 @@ import { Matrix } from 'pixi.js'
 
 /** Stores a grid. For now, only rectangular grids. */
 export class Grid {
-  private _width: number
-  private _height: number
+  private width_: number
+  private height_: number
 
   constructor(width: number, height: number) {
-    this._width = width
-    this._height = height
+    this.width_ = width
+    this.height_ = height
   }
 
   /** Get the transform that the grid should be drawn with on the given renderer */
   transform(renderer: Renderer): Matrix {
     const MARGIN = 12
-    const width = (renderer.width - 2 * MARGIN) / this._width
-    const height = (renderer.height - 2 * MARGIN) / this._height
+    const width = (renderer.width - 2 * MARGIN) / this.width_
+    const height = (renderer.height - 2 * MARGIN) / this.height_
     const scale = Math.floor(Math.min(width, height)) // keep grid intervals nice and even
     return Matrix.IDENTITY.scale(scale, scale).translate(
-      renderer.width / 2 - (this._width / 2) * scale,
-      renderer.height / 2 - (this._height / 2) * scale,
+      renderer.width / 2 - (this.width_ / 2) * scale,
+      renderer.height / 2 - (this.height_ / 2) * scale,
     )
   }
 
@@ -27,8 +27,8 @@ export class Grid {
    * so resize the graphics as necessary.
    */
   draw(graphics: Graphics): Graphics {
-    for (let i = 0; i <= this._width; ++i) graphics.moveTo(i, 0).lineTo(i, this._height)
-    for (let i = 0; i <= this._height; ++i) graphics.moveTo(0, i).lineTo(this._width, i)
+    for (let i = 0; i <= this.width_; ++i) graphics.moveTo(i, 0).lineTo(i, this.height_)
+    for (let i = 0; i <= this.height_; ++i) graphics.moveTo(0, i).lineTo(this.width_, i)
     return graphics
   }
 }

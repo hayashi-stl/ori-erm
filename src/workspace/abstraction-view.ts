@@ -1,6 +1,5 @@
 import type { Project } from '@/project/project'
-import { Container, Graphics, HTMLText, Matrix } from 'pixi.js'
-import * as common from './common'
+import { Container, Graphics, Matrix } from 'pixi.js'
 
 /** The container that renders the abstraction */
 export class AbstractionView {
