@@ -1,10 +1,16 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, type Ref } from 'vue'
 
 const status = ref('')
+theStatus = status
+</script>
 
-function setStatus(newStatus: string) {
-  status.value = newStatus
+<script lang="ts">
+let theStatus: Ref<string, string> | undefined = undefined
+
+/** Sets the status in the one status bar */
+export function setStatus(newStatus: string) {
+  if (theStatus !== undefined) theStatus.value = newStatus
 }
 </script>
 

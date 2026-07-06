@@ -18,6 +18,12 @@ html {
   max-height: 100vh;
   overflow: hidden;
 }
+html[data-theme='light'] {
+  color: black;
+}
+html[data-theme='dark'] {
+  color: white;
+}
 
 body {
   margin: 0;
@@ -52,6 +58,35 @@ body {
   flex-shrink: 0;
   flex-grow: 0;
   background-color: lightgray;
+}
+html[data-theme='light'] .toolbar {
+  background-color: lightgray;
+}
+html[data-theme='dark'] .toolbar {
+  background-color: #404080;
+}
+
+#workspace {
+  width: 100%;
+  max-height: 100%;
+  flex-grow: 1;
+  flex-shrink: 1;
+  min-height: 0;
+}
+
+.status {
+  width: 100%;
+  flex-shrink: 0;
+  flex-grow: 0;
+  min-height: 24px;
+  max-height: 24px;
+  padding: 3px;
+}
+html[data-theme='light'] .status {
+  background-color: lightgray;
+}
+html[data-theme='dark'] .status {
+  background-color: #404080;
 }
 
 #workspace {

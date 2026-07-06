@@ -1,3 +1,4 @@
+import { currTheme } from '@/config'
 import type { Project } from '@/project/project'
 import { Container, Graphics, Matrix } from 'pixi.js'
 
@@ -21,7 +22,7 @@ export class AbstractionView {
 
   redraw() {
     this.grid.clear().setTransform(this.transform)
-    this.project.grid.draw(this.grid).stroke({ width: 1, color: 0xc0c0c0 })
+    this.project.grid.draw(this.grid).stroke({ width: 1, color: currTheme().grid })
   }
 
   /** Resize the transform. */
