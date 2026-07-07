@@ -1,14 +1,18 @@
 <script setup lang="ts">
 import ImageDropdown from '@/components/ImageDropdown.vue'
 import { translate } from '@/config'
-import { setStatus } from '@/StatusBar.vue'
+import { Project } from '@/project/project'
 
 function newProject() {
-  setStatus('Project newed.')
+  if (Project.newProject === undefined) return
+  const project = Project.newProject()
+  Project.insertProject(Project.activeProjectIndex + 1, project)
+  Project.activeProjectIndex += 1
 }
 
 function closeProject() {
-  setStatus('Project closed.')
+  // TODO: Do you want to save? dialog
+  Project.removeProject(Project.activeProjectIndex)
 }
 </script>
 

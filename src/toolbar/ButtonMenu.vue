@@ -17,6 +17,5 @@ import SettingsMenu from './SettingsMenu.vue'
   display: flex;
   flex-direction: row;
   margin: 3px;
-  gap: 3px;
 }
 </style>

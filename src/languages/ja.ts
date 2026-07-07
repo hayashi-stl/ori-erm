@@ -12,4 +12,6 @@ export const JAPANESE: Translation = {
   toolbarSettings: '設定',
   toolbarLightMode: 'ライトモード',
   toolbarDarkMode: 'ダークモード',
+
+  untitled: '無題',
 }

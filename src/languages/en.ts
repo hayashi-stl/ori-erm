@@ -12,4 +12,6 @@ export const ENGLISH: Translation = {
   toolbarSettings: 'Settings',
   toolbarLightMode: 'Light Mode',
   toolbarDarkMode: 'Dark Mode',
+
+  untitled: 'Untitled',
 }

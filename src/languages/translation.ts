@@ -10,4 +10,6 @@ export type Translation = {
   toolbarSettings: string
   toolbarLightMode: string
   toolbarDarkMode: string
+
+  untitled: string
 }

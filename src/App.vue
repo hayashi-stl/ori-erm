@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import StatusBar from './StatusBar.vue'
 import ToolbarMenu from './toolbar/ToolbarMenu.vue'
-import WorkspaceView from './workspace/WorkspaceView.vue'
+import ProjectView from './project/ProjectView.vue'
 </script>
 
 <template>
   <ToolbarMenu />
-  <WorkspaceView />
+  <ProjectView />
   <StatusBar />
 </template>
 
