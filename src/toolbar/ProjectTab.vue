@@ -18,39 +18,30 @@ function setActiveIndex() {
   />
 </template>
 
-<style>
+<style lang="scss" scoped>
+@use 'sass:map';
+@use 'sass:color';
+@use '@/_defs.scss';
+
 .project-tab {
   width: max-content;
   padding: 3px;
 }
-html[data-theme='light'] .project-tab {
-  border: gray 1px solid;
-  background-color: lightgray;
-  color: #0008;
+@each $theme in defs.$themes {
+  html[data-theme='#{$theme}'] .project-tab {
+    border: map.get(defs.$border-color, $theme) 1px solid;
+    background-color: map.get(defs.$bar-color, $theme);
+    color: color.change(map.get(defs.$text-color, $theme), $alpha: 0.5);
 
-  &:hover {
-    background-color: #c0c0c0;
-    color: #000f;
-  }
+    &:hover {
+      background-color: map.get(defs.$hover-color, $theme);
+      color: map.get(defs.$text-color, $theme);
+    }
 
-  &.active {
-    background-color: #a0a0a0;
-    color: #000f;
-  }
-}
-html[data-theme='dark'] .project-tab {
-  border: #6060c0 1px solid;
-  background-color: #404080;
-  color: #fff8;
-
-  &:hover {
-    background-color: #484890;
-    color: #ffff;
-  }
-
-  &.active {
-    background-color: #5858b0;
-    color: #ffff;
+    &.active {
+      background-color: map.get(defs.$active-color, $theme);
+      color: map.get(defs.$text-color, $theme);
+    }
   }
 }
 </style>

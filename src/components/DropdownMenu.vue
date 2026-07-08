@@ -53,7 +53,10 @@ function showDropdown(ev: MouseEvent) {
   </div>
 </template>
 
-<style scoped>
+<style lang="scss" scoped>
+@use 'sass:map';
+@use '@/_defs.scss';
+
 .dropdown {
   position: relative;
 }
@@ -61,14 +64,21 @@ function showDropdown(ev: MouseEvent) {
 .dropdown-menu {
   position: absolute;
   width: max-content;
-  background-color: lightgray;
-  border: gray 1px solid;
   display: flex;
   flex-direction: column;
 
   > input {
     border: none;
     text-align: left;
+  }
+}
+@each $theme in defs.$themes {
+  html[data-theme='#{$theme}'] .dropdown-menu {
+    border: map.get(defs.$border-color, $theme) 1px solid;
+    > input {
+      color: map.get(defs.$text-color, $theme);
+      @include defs.button-color($theme);
+    }
   }
 }
 </style>

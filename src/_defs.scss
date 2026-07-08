@@ -1,0 +1,46 @@
+@use 'sass:map';
+
+@mixin fixed-width($size) {
+  width: $size;
+  min-width: $size;
+  max-width: $size;
+}
+
+@mixin fixed-height($size) {
+  height: $size;
+  min-height: $size;
+  max-height: $size;
+}
+
+$themes: 'light', 'dark';
+
+$text-color: (
+  'light': black,
+  'dark': white,
+);
+
+$bar-color: (
+  'light': lightgray,
+  'dark': #404080,
+);
+$hover-color: (
+  'light': #c8c8c8,
+  'dark': #484890,
+);
+$active-color: (
+  'light': #b0b0b0,
+  'dark': #5858b0,
+);
+$border-color: (
+  'light': gray,
+  'dark': #6060c0,
+);
+
+$text-size: 12pt;
+
+@mixin button-color($theme) {
+  background-color: map.get($bar-color, $theme);
+  &:hover {
+    background-color: map.get($hover-color, $theme);
+  }
+}
