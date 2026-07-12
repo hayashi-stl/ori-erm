@@ -41,6 +41,7 @@ describe('Fraction add', () => {
   it('big values', () =>
     expect(Rat.of(10, 2 ** 53 - 1).add(Rat.of(23, 2 ** 53 - 1))).toEqual(Rat.of(33, 2 ** 53 - 1)))
   it('different denominators', () => expect(Rat.of(4, 9).add(Rat.of(7, 6))).toEqual(Rat.of(29, 18)))
+  it('infinite loop regression', () => Rat.ONE.add(Rat.THREE))
 })
 
 describe('Fraction sub', () => {
@@ -73,4 +74,54 @@ describe('Fraction div', () => {
     expect(Rat.of(10, 2 ** 53 - 1).div(Rat.of(23, 2 ** 53 - 1))).toEqual(Rat.of(10, 23)))
   it('left negative', () => expect(Rat.of(-2, 3).div(Rat.of(7, 5))).toEqual(Rat.of(-10, 21)))
   it('right negative', () => expect(Rat.of(2, 3).div(Rat.of(-7, 5))).toEqual(Rat.of(-10, 21)))
+})
+
+describe('Fraction eq', () => {
+  it('equal', () => expect(Rat.of(1, 2).eq(Rat.of(2, 4))).toBe(true))
+  it('not equal', () => expect(Rat.of(1, 2).eq(Rat.of(2, 5))).toBe(false))
+})
+
+describe('Fraction ne', () => {
+  it('equal', () => expect(Rat.of(1, 2).ne(Rat.of(2, 4))).toBe(false))
+  it('not equal', () => expect(Rat.of(1, 2).ne(Rat.of(2, 5))).toBe(true))
+})
+
+describe('Fraction lt', () => {
+  it('equal', () => expect(Rat.of(1, 2).lt(Rat.of(2, 4))).toBe(false))
+  it('same denominator lt', () => expect(Rat.of(2, 3).lt(Rat.of(4, 3))).toBe(true))
+  it('same denominator gt', () => expect(Rat.of(4, 3).lt(Rat.of(2, 3))).toBe(false))
+  it('big values lt', () => expect(Rat.of(10, 2 ** 53 - 1).lt(Rat.of(23, 2 ** 53 - 1))).toBe(true))
+  it('big values gt', () => expect(Rat.of(23, 2 ** 53 - 1).lt(Rat.of(10, 2 ** 53 - 1))).toBe(false))
+  it('different denominators lt', () => expect(Rat.of(4, 9).lt(Rat.of(7, 6))).toBe(true))
+  it('different denominators gt', () => expect(Rat.of(7, 6).lt(Rat.of(4, 9))).toBe(false))
+})
+
+describe('Fraction le', () => {
+  it('equal', () => expect(Rat.of(1, 2).le(Rat.of(2, 4))).toBe(true))
+  it('same denominator lt', () => expect(Rat.of(2, 3).le(Rat.of(4, 3))).toBe(true))
+  it('same denominator gt', () => expect(Rat.of(4, 3).le(Rat.of(2, 3))).toBe(false))
+  it('big values lt', () => expect(Rat.of(10, 2 ** 53 - 1).le(Rat.of(23, 2 ** 53 - 1))).toBe(true))
+  it('big values gt', () => expect(Rat.of(23, 2 ** 53 - 1).le(Rat.of(10, 2 ** 53 - 1))).toBe(false))
+  it('different denominators lt', () => expect(Rat.of(4, 9).le(Rat.of(7, 6))).toBe(true))
+  it('different denominators gt', () => expect(Rat.of(7, 6).le(Rat.of(4, 9))).toBe(false))
+})
+
+describe('Fraction gt', () => {
+  it('equal', () => expect(Rat.of(1, 2).gt(Rat.of(2, 4))).toBe(false))
+  it('same denominator lt', () => expect(Rat.of(2, 3).gt(Rat.of(4, 3))).toBe(false))
+  it('same denominator gt', () => expect(Rat.of(4, 3).gt(Rat.of(2, 3))).toBe(true))
+  it('big values lt', () => expect(Rat.of(10, 2 ** 53 - 1).gt(Rat.of(23, 2 ** 53 - 1))).toBe(false))
+  it('big values gt', () => expect(Rat.of(23, 2 ** 53 - 1).gt(Rat.of(10, 2 ** 53 - 1))).toBe(true))
+  it('different denominators lt', () => expect(Rat.of(4, 9).gt(Rat.of(7, 6))).toBe(false))
+  it('different denominators gt', () => expect(Rat.of(7, 6).gt(Rat.of(4, 9))).toBe(true))
+})
+
+describe('Fraction ge', () => {
+  it('equal', () => expect(Rat.of(1, 2).ge(Rat.of(2, 4))).toBe(true))
+  it('same denominator lt', () => expect(Rat.of(2, 3).ge(Rat.of(4, 3))).toBe(false))
+  it('same denominator gt', () => expect(Rat.of(4, 3).ge(Rat.of(2, 3))).toBe(true))
+  it('big values lt', () => expect(Rat.of(10, 2 ** 53 - 1).ge(Rat.of(23, 2 ** 53 - 1))).toBe(false))
+  it('big values gt', () => expect(Rat.of(23, 2 ** 53 - 1).ge(Rat.of(10, 2 ** 53 - 1))).toBe(true))
+  it('different denominators lt', () => expect(Rat.of(4, 9).ge(Rat.of(7, 6))).toBe(false))
+  it('different denominators gt', () => expect(Rat.of(7, 6).ge(Rat.of(4, 9))).toBe(true))
 })

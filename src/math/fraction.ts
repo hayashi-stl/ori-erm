@@ -46,6 +46,20 @@ export class Rat {
     return self.simplify().normalizeNegative()
   }
 
+  // Some small constants
+  static NEG_ONE: Rat = Rat.of(-1, 1)
+  static ZERO: Rat = Rat.of(0, 1)
+  static ONE: Rat = Rat.of(1, 1)
+  static TWO: Rat = Rat.of(2, 1)
+  static THREE: Rat = Rat.of(3, 1)
+  static FOUR: Rat = Rat.of(4, 1)
+
+  /** Construct a `Rat` from an integer */
+  static int(n: Int): Rat {
+    // No simplification necessary
+    return new Rat(n, 1)
+  }
+
   private normalizeNegative(): Rat {
     if (this.d < 0) {
       this.n *= -1
@@ -100,5 +114,33 @@ export class Rat {
       (this.n / thisGcd) * (that.d / thatGcd),
       (this.d / thatGcd) * (that.n / thisGcd),
     ).normalizeNegative()
+  }
+
+  eq(that: Rat): boolean {
+    // The nice thing about keeping a standard representation is that
+    // this becomes easy
+    return this.n === that.n && this.d === that.d
+  }
+
+  ne(that: Rat): boolean {
+    return !this.eq(that)
+  }
+
+  lt(that: Rat): boolean {
+    const gcd_ = gcd(this.d, that.d)
+    return this.n * (that.d / gcd_) < that.n * (this.d / gcd_)
+  }
+
+  le(that: Rat): boolean {
+    return this.eq(that) || this.lt(that)
+  }
+
+  gt(that: Rat): boolean {
+    const gcd_ = gcd(this.d, that.d)
+    return this.n * (that.d / gcd_) > that.n * (this.d / gcd_)
+  }
+
+  ge(that: Rat): boolean {
+    return this.eq(that) || this.gt(that)
   }
 }
