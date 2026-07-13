@@ -143,4 +143,28 @@ export class Rat {
   ge(that: Rat): boolean {
     return this.eq(that) || this.gt(that)
   }
+
+  // Some comparison functions that just require comparing the numerator
+  // (because the denominator is positive)
+
+  isNegative(): boolean {
+    return this.n < 0
+  }
+
+  isPositive(): boolean {
+    return this.n > 0
+  }
+
+  isNonpositive(): boolean {
+    return this.n <= 0
+  }
+
+  isNonnegative(): boolean {
+    return this.n >= 0
+  }
+
+  /** -1, 0, or 1 depending on the sign of this rational. */
+  sign(): Int {
+    return Math.sign(this.n)
+  }
 }

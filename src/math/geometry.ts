@@ -1,4 +1,5 @@
-import { Rat } from './fraction'
+import { Rat, type Int } from './fraction'
+import { mod } from './math'
 
 /** A vector in 2D space. Also used to represent points. */
 export class Vec2 {
@@ -126,6 +127,10 @@ export class Vec2 {
 export class Polygon {
   points: Vec2[]
 
+  get length(): Int {
+    return this.points.length
+  }
+
   /** Beware: the list is aliased */
   constructor(points: Vec2[]) {
     this.points = points
@@ -135,17 +140,61 @@ export class Polygon {
     return new Polygon([...this.points])
   }
 
+  /** Gets a reference to the point at `index`, going in cyclic order of the point.
+   * For example, passing 9 to a 7-sided polygon will get the vertex at index 2.
+   * Negative indices also work. -1 in a 5-sided polygon is equivalent to 4.
+   */
+  at(index: Int): Vec2 {
+    // Because of how `at` works, this works even with
+    // negative `index` and silly truncation modulo.
+    return this.points.at(index % this.length)!
+  }
+
+  /** Rotate the points so that point `index` moves to position 0. */
+  rotatePoints(index: Int) {
+    const reduced = mod(index, this.length)
+    this.points = this.points.slice(reduced).concat(this.points.slice(0, reduced))
+  }
+
   /** Generates a list of vertex duplicates (indices of vertices that have the same position as the next vertex) */
   *duplicates() {
     // Do the naïve quadratic check for now.
     // Input size is expected to be small.
-    for (let i = 0; i < this.points.length; ++i)
-      if (this.points[i]!.eq(this.points[(i + 1) % this.points.length]!)) yield i
+    for (let i = 0; i < this.length; ++i) if (this.at(i).eq(this.at(i + 1))) yield i
   }
 
   /** Gets whether this polygon has a pair of duplicate vertices (consecutive vertices that have the same position) */
   hasDuplicate(): boolean {
     return !this.duplicates().next().done
+  }
+
+  /** Check if a polygon is (weakly) convex. We assume the polygon has no duplicate points
+   * (`hasDuplicate()` returns `false`).
+   * A weakly convex polygon is a polygon that either
+   *  * makes at least 1 left/right turn, and never turns left or never turns right, and never turns 180°
+   *  * makes no left/right turns, and makes at most 2 180° turns (technically exactly, but that's equivalent)
+   */
+  isConvex(): boolean {
+    let uTurns = 0
+    let sideTurn = 0 // negative for one turn direction, positive for the other.
+
+    for (let i = 0; i < this.length; ++i) {
+      const p0 = this.at(i)
+      const p1 = this.at(i + 1)
+      const p2 = this.at(i + 2)
+      const turn = p1.sub(p0).cross(p2.sub(p1)).sign()
+      if (turn === 0) {
+        // Straight or 180° turn
+        if (p1.sub(p0).dot(p2.sub(p1)).isNegative()) {
+          ++uTurns
+          if (sideTurn !== 0 || uTurns > 2) return false
+        }
+      } else if ((sideTurn > 0 && turn < 0) || (sideTurn < 0 && turn > 0) || uTurns > 0)
+        return false
+      else sideTurn = turn
+    }
+
+    return true
   }
 }
 

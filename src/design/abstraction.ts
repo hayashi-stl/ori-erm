@@ -1,4 +1,5 @@
-import { Matrix, type Polygon } from 'pixi.js'
+import type { Polygon } from '@/math/geometry'
+import { Matrix } from 'pixi.js'
 
 /** A face in an abstraction. Usually a rectangle. */
 export class Face {
@@ -17,7 +18,7 @@ export class Face {
    * Note that area-0 faces are allowed. The path must go back and forth only once.
    */
   valid(): boolean {
-    ;``
+    return !this.polygon.hasDuplicate() && this.polygon.isConvex()
   }
 }
 
