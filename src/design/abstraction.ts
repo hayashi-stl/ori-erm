@@ -1,11 +1,13 @@
+import type { Int } from '@/math/fraction'
 import type { Polygon } from '@/math/geometry'
-import { Matrix } from 'pixi.js'
+import { Mtx2x3 } from '@/math/linear'
 
 /** A face in an abstraction. Usually a rectangle. */
 export class Face {
   polygon: Polygon
   back: boolean
 
+  /** Beware: this aliases */
   constructor(polygon: Polygon, back: boolean) {
     this.polygon = polygon
     this.back = back
@@ -22,16 +24,40 @@ export class Face {
   }
 }
 
+type Target = { target: Face; edges: [Int, Int] }
+
 /** An entry storing more data relevant to the abstraction than just the face, such as
  * position and connections.
  */
 class AbstractionEntry {
-  transform: Matrix = Matrix.IDENTITY
+  /** The transform in the abstraction, which is really just for visual/organization purposes. */
+  transform: Mtx2x3 = Mtx2x3.I
   /** Target face, followed by the source-edge-index and target-edge-index that connect. */
-  targets: { target: Face; edges: [number, number] }[] = []
+  targets: Target[] = []
+
+  /** Beware: this aliases */
+  constructor(transform: Mtx2x3, targets: Target[]) {
+    this.transform = transform
+    this.targets = targets
+  }
 }
 
 /** An abstraction: the object you want to represent */
 export class Abstraction {
   faces: Map<Face, AbstractionEntry> = new Map()
+
+  /** Beware: this aliases */
+  constructor(faces: Map<Face, AbstractionEntry>) {
+    this.faces = faces
+  }
+
+  /** Constructs a shiny new abstraction with no faces */
+  static new() {
+    return new Abstraction(new Map())
+  }
+
+  /** Adds an unconnected face to the abstraction. The matrix is aliased. */
+  addFace(face: Face, transform: Mtx2x3) {
+    this.faces.set(face, new AbstractionEntry(transform, []))
+  }
 }
