@@ -13,3 +13,8 @@ export function div(a: number, b: number): number {
 export function mod(a: number, b: number): number {
   return ((a % b) + b) % b
 }
+
+/** Clamps a number to a range */
+export function clamp(n: number, min: number, max: number): number {
+  return Math.min(Math.max(n, min), max)
+}

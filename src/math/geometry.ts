@@ -1,5 +1,5 @@
 import { type Int } from './fraction'
-import type { Vec2 } from './linear'
+import { Vec2 } from './linear'
 import { mod } from './math'
 
 /** A polygon, which is a sequence of points. Polygons are assumed to be closed. */
@@ -13,6 +13,14 @@ export class Polygon {
   /** Beware: the list is aliased */
   constructor(points: Vec2[]) {
     this.points = points
+  }
+
+  /** Constructs an axis-aligned rectangle from two corners, winded clockwise.
+   */
+  static rect(start: Vec2, end: Vec2) {
+    const min = start.min(end)
+    const max = start.max(end)
+    return new Polygon([min, new Vec2(max.x, min.y), max, new Vec2(min.x, max.y)])
   }
 
   clone(): Polygon {

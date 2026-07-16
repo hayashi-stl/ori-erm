@@ -125,3 +125,23 @@ describe('Fraction ge', () => {
   it('different denominators lt', () => expect(Rat.of(4, 9).ge(Rat.of(7, 6))).toBe(false))
   it('different denominators gt', () => expect(Rat.of(7, 6).ge(Rat.of(4, 9))).toBe(true))
 })
+
+describe('Fraction min', () => {
+  it('lt', () => expect(Rat.of(1, 1).min(Rat.of(2, 1))).toEqual(Rat.of(1, 1)))
+  it('eq', () => expect(Rat.of(2, 1).min(Rat.of(2, 1))).toEqual(Rat.of(2, 1)))
+  it('gt', () => expect(Rat.of(3, 1).min(Rat.of(2, 1))).toEqual(Rat.of(2, 1)))
+})
+
+describe('Fraction max', () => {
+  it('lt', () => expect(Rat.of(1, 1).max(Rat.of(2, 1))).toEqual(Rat.of(2, 1)))
+  it('eq', () => expect(Rat.of(2, 1).max(Rat.of(2, 1))).toEqual(Rat.of(2, 1)))
+  it('gt', () => expect(Rat.of(3, 1).max(Rat.of(2, 1))).toEqual(Rat.of(3, 1)))
+})
+
+describe('Fraction clamp', () => {
+  it('lt lt', () => expect(Rat.of(0, 1).clamp(Rat.of(1, 1), Rat.of(3, 1))).toEqual(Rat.of(1, 1)))
+  it('eq lt', () => expect(Rat.of(1, 1).clamp(Rat.of(1, 1), Rat.of(3, 1))).toEqual(Rat.of(1, 1)))
+  it('gt lt', () => expect(Rat.of(2, 1).clamp(Rat.of(1, 1), Rat.of(3, 1))).toEqual(Rat.of(2, 1)))
+  it('gt eq', () => expect(Rat.of(3, 1).clamp(Rat.of(1, 1), Rat.of(3, 1))).toEqual(Rat.of(3, 1)))
+  it('gt gt', () => expect(Rat.of(4, 1).clamp(Rat.of(1, 1), Rat.of(3, 1))).toEqual(Rat.of(3, 1)))
+})

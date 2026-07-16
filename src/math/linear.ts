@@ -1,3 +1,4 @@
+import { Matrix, Point } from 'pixi.js'
 import { Rat } from './fraction'
 
 /** A vector in 2D space. Also used to represent points. */
@@ -136,6 +137,34 @@ export class Vec2 {
 
   ne(that: Vec2): boolean {
     return !this.eq(that)
+  }
+
+  /** Elementwise minimum */
+  min(that: Vec2): Vec2 {
+    return new Vec2(this.x.min(that.x), this.y.min(that.y))
+  }
+
+  /** Elementwise maximum */
+  max(that: Vec2): Vec2 {
+    return new Vec2(this.x.max(that.x), this.y.max(that.y))
+  }
+
+  /** Elementwise clamping */
+  clamp(min: Vec2, max: Vec2): Vec2 {
+    return new Vec2(this.x.clamp(min.x, max.x), this.y.clamp(min.y, max.y))
+  }
+
+  toString(): string {
+    return `[${this.x}, ${this.y}]`
+  }
+
+  toFloat(): { x: number; y: number } {
+    return { x: this.x.toFloat(), y: this.y.toFloat() }
+  }
+
+  /** Converts this to a pixi `Point` */
+  toPixi(): Point {
+    return new Point(this.x.toFloat(), this.y.toFloat())
   }
 }
 
@@ -291,6 +320,33 @@ export class Vec3 {
   ne(that: Vec3): boolean {
     return !this.eq(that)
   }
+
+  /** Elementwise minimum */
+  min(that: Vec3): Vec3 {
+    return new Vec3(this.x.min(that.x), this.y.min(that.y), this.z.min(that.z))
+  }
+
+  /** Elementwise maximum */
+  max(that: Vec3): Vec3 {
+    return new Vec3(this.x.max(that.x), this.y.max(that.y), this.z.max(that.z))
+  }
+
+  /** Elementwise clamping */
+  clamp(min: Vec3, max: Vec3): Vec3 {
+    return new Vec3(
+      this.x.clamp(min.x, max.x),
+      this.y.clamp(min.y, max.y),
+      this.z.clamp(min.z, max.z),
+    )
+  }
+
+  toString(): string {
+    return `[${this.x}, ${this.y}, ${this.z}]`
+  }
+
+  toFloat(): { x: number; y: number; z: number } {
+    return { x: this.x.toFloat(), y: this.y.toFloat(), z: this.z.toFloat() }
+  }
 }
 
 /** A 2×2 matrix. */
@@ -420,6 +476,26 @@ export class Mtx2 {
 
   ne(that: Mtx2): boolean {
     return !this.eq(that)
+  }
+
+  toString(): string {
+    return `[${this.c0}, ${this.c1}]`
+  }
+
+  toFloat(): { c0: { x: number; y: number }; c1: { x: number; y: number } } {
+    return { c0: this.c0.toFloat(), c1: this.c1.toFloat() }
+  }
+
+  /** Converts this to a pixi `Matrix` */
+  toPixi(): Matrix {
+    return new Matrix(
+      this.c0.x.toFloat(),
+      this.c0.y.toFloat(),
+      this.c1.x.toFloat(),
+      this.c1.y.toFloat(),
+      0,
+      0,
+    )
   }
 }
 
@@ -570,5 +646,29 @@ export class Mtx2x3 {
 
   ne(that: Mtx2x3): boolean {
     return !this.eq(that)
+  }
+
+  toString(): string {
+    return `[${this.c0}, ${this.c1}, ${this.c2}]`
+  }
+
+  toFloat(): {
+    c0: { x: number; y: number }
+    c1: { x: number; y: number }
+    c2: { x: number; y: number }
+  } {
+    return { c0: this.c0.toFloat(), c1: this.c1.toFloat(), c2: this.c2.toFloat() }
+  }
+
+  /** Converts this to a pixi `Matrix` */
+  toPixi(): Matrix {
+    return new Matrix(
+      this.c0.x.toFloat(),
+      this.c0.y.toFloat(),
+      this.c1.x.toFloat(),
+      this.c1.y.toFloat(),
+      this.c2.x.toFloat(),
+      this.c2.y.toFloat(),
+    )
   }
 }

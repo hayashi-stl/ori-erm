@@ -4,7 +4,7 @@ import DropdownMenu from './DropdownMenu.vue'
 
 defineProps<{
   name: Ref<string>
-  items: { text: Ref<string>; click: (ev: MouseEvent) => void }[]
+  items: { text: Ref<string>; click: (ev: PointerEvent) => void }[]
 }>()
 </script>
 

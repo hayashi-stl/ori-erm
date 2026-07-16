@@ -144,6 +144,18 @@ export class Rat {
     return this.eq(that) || this.gt(that)
   }
 
+  min(that: Rat): Rat {
+    return this.lt(that) ? this : that
+  }
+
+  max(that: Rat): Rat {
+    return this.gt(that) ? this : that
+  }
+
+  clamp(min: Rat, max: Rat): Rat {
+    return this.max(min).min(max)
+  }
+
   // Some comparison functions that just require comparing the numerator
   // (because the denominator is positive)
 
@@ -166,5 +178,13 @@ export class Rat {
   /** -1, 0, or 1 depending on the sign of this rational. */
   sign(): Int {
     return Math.sign(this.n)
+  }
+
+  toFloat(): number {
+    return this.n / this.d
+  }
+
+  toString(): string {
+    return `${this.n}/${this.d}`
   }
 }

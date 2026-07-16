@@ -5,6 +5,7 @@ import { onMounted, useTemplateRef, watch } from 'vue'
 import { Config, currTheme, THEMES } from '@/config'
 import { Project } from './project'
 import { Grid } from '@/design/grid'
+import { Icon } from './icon'
 
 const workspace = useTemplateRef('workspace')
 
@@ -16,6 +17,8 @@ onMounted(async () => {
   })
 
   workspace.value!.appendChild(graphics.canvas)
+
+  Icon.renderAll(currTheme())
 
   Project.insertProject(
     0,
@@ -38,6 +41,7 @@ onMounted(async () => {
     (newValue, _oldValue) => {
       document.documentElement.dataset.theme = THEMES.get(newValue)!.uiTheme
       graphics.renderer.background.color = currTheme().background
+      Icon.renderAll(currTheme())
       Project.activeProject?.render()
     },
   )

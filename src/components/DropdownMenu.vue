@@ -4,7 +4,7 @@
 import { useTemplateRef, ref, type Ref } from 'vue'
 
 const props = defineProps<{
-  items: { text: Ref<string>; click: (ev: MouseEvent) => void }[]
+  items: { text: Ref<string>; click: (ev: PointerEvent) => void }[]
 }>()
 
 // Index the items so that the v-for is keyed
@@ -17,9 +17,9 @@ const keyedItems = props.items.map((item, index) => ({
 const dropdown = useTemplateRef('dropdown')
 const activated = ref(false)
 
-let hideEvent: MouseEvent | undefined = undefined
+let hideEvent: PointerEvent | undefined = undefined
 
-function showDropdown(ev: MouseEvent) {
+function showDropdown(ev: PointerEvent) {
   // Don't show the dropdown on the same click that hides it
   if (ev === hideEvent) {
     hideEvent = undefined
@@ -29,7 +29,7 @@ function showDropdown(ev: MouseEvent) {
   // Make the dropdown go away on click
   window.addEventListener(
     'click',
-    (ev2: MouseEvent) => {
+    (ev2: PointerEvent) => {
       hideEvent = ev2
       activated.value = false
     },

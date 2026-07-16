@@ -29,17 +29,17 @@ type Target = { target: Face; edges: [Int, Int] }
 /** An entry storing more data relevant to the abstraction than just the face, such as
  * position and connections.
  */
-class AbstractionEntry {
+type AbstractionEntry = {
   /** The transform in the abstraction, which is really just for visual/organization purposes. */
-  transform: Mtx2x3 = Mtx2x3.I
+  transform: Mtx2x3
   /** Target face, followed by the source-edge-index and target-edge-index that connect. */
-  targets: Target[] = []
+  targets: Target[]
 
-  /** Beware: this aliases */
-  constructor(transform: Mtx2x3, targets: Target[]) {
-    this.transform = transform
-    this.targets = targets
-  }
+  ///** Beware: this aliases */
+  //constructor(transform: Mtx2x3, targets: Target[]) {
+  //  this.transform = transform
+  //  this.targets = targets
+  //}
 }
 
 /** An abstraction: the object you want to represent */
@@ -58,6 +58,6 @@ export class Abstraction {
 
   /** Adds an unconnected face to the abstraction. The matrix is aliased. */
   addFace(face: Face, transform: Mtx2x3) {
-    this.faces.set(face, new AbstractionEntry(transform, []))
+    this.faces.set(face, { transform: transform, targets: [] })
   }
 }
