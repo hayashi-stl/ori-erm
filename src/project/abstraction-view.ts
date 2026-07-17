@@ -1,10 +1,20 @@
 import { currTheme } from '@/config'
-import type { Design } from '@/design/design'
+import {
+  Face,
+  FaceAdded,
+  FaceChanged,
+  FaceRemoved,
+  GridChanged,
+  UndoStack,
+  type Action,
+  type Design,
+  type FaceID,
+} from '@/design/design'
 import { Mtx2x3, Vec2 } from '@/math/linear'
 import { Container, FederatedPointerEvent, Graphics, Matrix, Point, type Renderer } from 'pixi.js'
 import { Icon } from './icon'
-import { Face } from '@/design/abstraction'
 import { Polygon } from '@/math/geometry'
+import { Rat } from '@/math/fraction'
 
 interface State {
   cleanup(): void
@@ -22,6 +32,7 @@ class StDraw implements State {
   constructor(view: AbstractionView) {
     this.view = view
     this.cursor = Icon.RECT_CURSOR.clone()
+    this.cursor.zIndex = 1
     this.rect = new Graphics()
     this.view.container.addChild(this.cursor)
 
@@ -29,7 +40,6 @@ class StDraw implements State {
       this.start = view.mouseToGridSnappedWithBounds(ev.screen)
       this.view.container.addChild(this.rect)
       this.rect.clear()
-      this.cursor.removeFromParent()
     }
 
     this.onPointerMove = (ev) => {
@@ -37,13 +47,18 @@ class StDraw implements State {
       this.cursor.position = view.gridToMouse(coords)
       if (this.start !== undefined) {
         const min = this.start.min(coords)
-        const dims = this.start.max(coords).sub(min)
-        this.rect
-          .clear()
-          .setTransform(this.view.transform)
-          .rect(min.x.toFloat(), min.y.toFloat(), dims.x.toFloat(), dims.y.toFloat())
-          .fill(currTheme().abstractionFill)
-          .stroke({ width: 1, color: currTheme().abstractionOutline })
+        const max = this.start.max(coords)
+        const dims = max.sub(min)
+        this.rect.clear().setTransform(this.view.transform)
+        if (dims.x.eq(Rat.ZERO) || dims.y.eq(Rat.ZERO))
+          this.rect
+            .moveTo(min.x.toFloat(), min.y.toFloat())
+            .lineTo(max.x.toFloat(), max.y.toFloat())
+        else
+          this.rect
+            .rect(min.x.toFloat(), min.y.toFloat(), dims.x.toFloat(), dims.y.toFloat())
+            .fill(currTheme().abstractionFill)
+        this.rect.stroke({ width: 1, color: currTheme().abstractionOutline })
       }
     }
 
@@ -51,10 +66,9 @@ class StDraw implements State {
       if (this.start === undefined) return
       const coords = view.mouseToGridSnappedWithBounds(ev.screen)
       if (this.start.x.ne(coords.x) && this.start.y.ne(coords.y)) {
-        this.view.addFace(new Face(Polygon.rect(this.start, coords), false), Mtx2x3.I)
+        this.view.addFace(Face.unconnected(Polygon.rect(this.start, coords), false, Mtx2x3.I))
       }
       this.start = undefined
-      this.view.container.addChild(this.cursor)
       this.rect.removeFromParent()
     }
 
@@ -86,20 +100,22 @@ class StMove implements State {
 
 /** The container that renders the abstraction */
 export class AbstractionView {
-  project: Design
+  design: Design
   renderer: Renderer
   parent: Container
+  undoStack: UndoStack
   container: Container
   transform: Matrix
   grid: Graphics
-  faces: Map<Face, Graphics> = new Map()
+  faces: Map<FaceID, Graphics> = new Map()
   state: State
 
   /** Constructs an abstraction view for a specific project under a parent container */
-  constructor(project: Design, renderer: Renderer, parent: Container) {
-    this.project = project
+  constructor(design: Design, renderer: Renderer, parent: Container, undoStack: UndoStack) {
+    this.design = design
     this.renderer = renderer
     this.parent = parent
+    this.undoStack = undoStack
     this.container = new Container()
     parent.addChild(this.container)
 
@@ -120,12 +136,12 @@ export class AbstractionView {
 
   /** Converts mouse coordinates to grid coordinates and snaps them to the grid, assuming an infinite grid. */
   mouseToGridSnapped(p: Point): Vec2 {
-    return this.project.grid.snap(this.mouseToGrid(p))
+    return this.design.grid.snap(this.mouseToGrid(p))
   }
 
   /** Converts mouse coordinates to grid coordinates and snaps them to the grid in bounds. */
   mouseToGridSnappedWithBounds(p: Point): Vec2 {
-    return this.project.grid.snapWithBounds(this.mouseToGrid(p))
+    return this.design.grid.snapWithBounds(this.mouseToGrid(p))
   }
 
   /** Converts grid coordinates to mouse coordinates */
@@ -134,21 +150,17 @@ export class AbstractionView {
     return this.transform.apply(point)
   }
 
-  /** Adds a face to the abstraction and draws it */
-  addFace(face: Face, transform: Mtx2x3) {
-    this.project.abstraction.addFace(face, transform)
-    const graphics = new Graphics()
-    this.container.addChild(graphics)
-    this.faces.set(face, graphics)
-    this.drawFace(face)
+  /** Adds a face to the abstraction and gets the ID */
+  addFace(face: Face): FaceID {
+    const action = this.design.abstraction.addFace(face)
+    this.undoStack.push(action)
+    return action.faceID
   }
 
-  private drawFace(face: Face) {
-    const transform = this.project.abstraction.faces
-      .get(face)!
-      .transform.toPixi()
-      .prepend(this.transform)
-    const graphics = this.faces.get(face)!
+  private drawFace(faceID: FaceID) {
+    const face = this.design.abstraction.faces.get(faceID)!
+    const transform = face.transform.toPixi().prepend(this.transform)
+    const graphics = this.faces.get(faceID)!
     graphics
       .clear()
       .setTransform(transform)
@@ -168,11 +180,37 @@ export class AbstractionView {
     this.container.removeFromParent()
   }
 
+  /** Updates the state of the project (except the design)
+   * with an action that just got performed on the design
+   */
+  update(action: Action) {
+    if (action instanceof GridChanged) {
+      // Yeah, changing the grid is effectively a resize. Gotta redraw everything
+      this.render()
+      //
+    } else if (action instanceof FaceAdded) {
+      const graphics = new Graphics()
+      this.container.addChild(graphics)
+      this.faces.set(action.faceID, graphics)
+      this.drawFace(action.faceID)
+      //
+    } else if (action instanceof FaceChanged) {
+      this.drawFace(action.faceID)
+      //
+    } else if (action instanceof FaceRemoved) {
+      this.faces.get(action.faceID)!.removeFromParent()
+      this.faces.delete(action.faceID)
+      //
+    } else {
+      throw new Error(`Unknown action type: ${action.constructor.name}`)
+    }
+  }
+
   render() {
     this.container.hitArea = this.renderer.screen
-    this.transform = this.project.grid.transform(this.renderer)
+    this.transform = this.design.grid.transform(this.renderer)
     this.grid.clear().setTransform(this.transform)
-    this.project.grid.draw(this.grid).stroke({ width: 1, color: currTheme().grid })
-    for (const face of this.project.abstraction.faces) this.drawFace(face[0])
+    this.design.grid.draw(this.grid).stroke({ width: 1, color: currTheme().grid })
+    for (const face of this.design.abstraction.faces) this.drawFace(face[0])
   }
 }

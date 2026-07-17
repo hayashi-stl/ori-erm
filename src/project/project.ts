@@ -1,4 +1,4 @@
-import { Design } from '@/design/design'
+import { BatchAction, Design, UndoStack, type Action } from '@/design/design'
 import { AbstractionView } from './abstraction-view'
 import { ref, shallowReactive, type Ref, type ShallowReactive } from 'vue'
 import { translate } from '@/config'
@@ -8,6 +8,7 @@ import { Container, type Renderer } from 'pixi.js'
 export class Project {
   name: Ref<string>
   private design: Design
+  private undoStack: UndoStack
   private renderer: Renderer
   private parent: Container
   private container: Container
@@ -18,8 +19,9 @@ export class Project {
     this.design = design
     this.renderer = renderer
     this.parent = parent
+    this.undoStack = new UndoStack(this.update.bind(this))
     this.container = new Container()
-    this.abstractionView = new AbstractionView(design, renderer, this.container)
+    this.abstractionView = new AbstractionView(design, renderer, this.container, this.undoStack)
   }
 
   /** Make a new empty project. Initialized to `undefined` because
@@ -35,6 +37,25 @@ export class Project {
 
   hide() {
     this.container.removeFromParent()
+  }
+
+  undo() {
+    this.undoStack.undo(this.design)
+  }
+
+  redo() {
+    this.undoStack.redo(this.design)
+  }
+
+  /** Updates the state of the project (except the design)
+   * with an action that just got performed on the design
+   */
+  update(action: Action) {
+    if (action instanceof BatchAction) {
+      for (const a of action.actions) this.update(a)
+    } else {
+      this.abstractionView.update(action)
+    }
   }
 
   /** Performs a full render. */

@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import ImageDropdown from '@/components/ImageDropdown.vue'
 import { translate } from '@/config'
-import { setStatus } from '@/StatusBar.vue'
+import { Project } from '@/project/project'
 
 function undo() {
-  setStatus('Action undone.')
+  Project.activeProject?.undo()
 }
 
 function redo() {
-  setStatus('Action redone.')
+  Project.activeProject?.redo()
 }
 </script>
 

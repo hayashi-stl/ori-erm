@@ -46,8 +46,12 @@ onMounted(async () => {
     },
   )
 })
+
+function killContextMenu(ev: PointerEvent) {
+  ev.preventDefault()
+}
 </script>
 
 <template>
-  <div id="workspace" ref="workspace"></div>
+  <div id="workspace" ref="workspace" @contextmenu="killContextMenu"></div>
 </template>
