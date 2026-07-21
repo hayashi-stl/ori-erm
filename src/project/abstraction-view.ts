@@ -5,16 +5,16 @@ import {
   FaceChanged,
   FaceRemoved,
   GridChanged,
-  UndoStack,
   type Action,
-  type Design,
   type FaceID,
 } from '@/design/design'
 import { Mtx2x3, Vec2 } from '@/math/linear'
-import { Container, FederatedPointerEvent, Graphics, Matrix, Point, type Renderer } from 'pixi.js'
+import { Container, FederatedPointerEvent, Graphics, Matrix, Point } from 'pixi.js'
 import { Icon } from './icon'
 import { Polygon } from '@/math/geometry'
 import { Rat } from '@/math/fraction'
+import { AbstractionMode, type Project } from './project'
+import { shallowReactive, type ShallowReactive } from 'vue'
 
 interface State {
   cleanup(): void
@@ -88,36 +88,50 @@ class StDraw implements State {
   }
 }
 
-class StMove implements State {
+class StSelect implements State {
   view: AbstractionView
 
   constructor(view: AbstractionView) {
     this.view = view
+    this.view.selectionEnabled = true
   }
 
-  cleanup(): void {}
+  cleanup(): void {
+    this.view.setSelection(true, [], [])
+    this.view.selectionEnabled = false
+  }
 }
+
+//class StMove implements State {
+//  view: AbstractionView
+//
+//  constructor(view: AbstractionView) {
+//    this.view = view
+//  }
+//
+//  cleanup(): void {}
+//}
 
 /** The container that renders the abstraction */
 export class AbstractionView {
-  design: Design
-  renderer: Renderer
-  parent: Container
-  undoStack: UndoStack
+  project: Project
   container: Container
   transform: Matrix
   grid: Graphics
   faces: Map<FaceID, Graphics> = new Map()
   state: State
+  selectionEnabled: boolean = false
+  selection: ShallowReactive<Set<FaceID>> = shallowReactive(new Set())
+
+  /* prettier-ignore */ get renderer() { return this.project.renderer }
+  /* prettier-ignore */ get design() { return this.project.design }
+  /* prettier-ignore */ get parent() { return this.project.container }
 
   /** Constructs an abstraction view for a specific project under a parent container */
-  constructor(design: Design, renderer: Renderer, parent: Container, undoStack: UndoStack) {
-    this.design = design
-    this.renderer = renderer
-    this.parent = parent
-    this.undoStack = undoStack
+  constructor(project: Project) {
+    this.project = project
     this.container = new Container()
-    parent.addChild(this.container)
+    project.parent.addChild(this.container)
 
     this.transform = Matrix.IDENTITY
     this.grid = new Graphics()
@@ -153,7 +167,7 @@ export class AbstractionView {
   /** Adds a face to the abstraction and gets the ID */
   addFace(face: Face): FaceID {
     const action = this.design.abstraction.addFace(face)
-    this.undoStack.push(action)
+    this.project.pushAction(action)
     return action.faceID
   }
 
@@ -169,7 +183,7 @@ export class AbstractionView {
         true,
       )
       .fill(currTheme().abstractionFill)
-      .stroke({ width: 1, color: currTheme().abstractionOutline })
+      .stroke({ width: this.selection.has(faceID) ? 3 : 1, color: currTheme().abstractionOutline })
   }
 
   show() {
@@ -178,6 +192,39 @@ export class AbstractionView {
 
   hide() {
     this.container.removeFromParent()
+  }
+
+  /** Sets the new state. Unfortunately the name needs to be passed separately because
+   * we want to clean up the old state before initializing the new state, and we can't
+   * get the name of the new state without first initializing it.
+   */
+  private setState(name: string, state: () => State, force: boolean = false) {
+    if (!force && this.state.constructor.name === name) return
+    this.state.cleanup()
+    this.state = state()
+    if (this.state.constructor.name !== name)
+      throw Error(`Liar! ${this.state.constructor.name} ≠ ${name}`)
+  }
+
+  setMode(mode: AbstractionMode) {
+    if (mode === AbstractionMode.Select) this.setState(StSelect.name, () => new StSelect(this))
+    else if (mode === AbstractionMode.Rectangle) this.setState(StDraw.name, () => new StDraw(this))
+  }
+
+  setSelection(clear: boolean, add: FaceID[], remove: FaceID[]) {
+    if (clear) {
+      const oldFaces = [...this.selection.values()]
+      this.selection.clear()
+      for (const face of oldFaces) this.drawFace(face)
+    }
+    for (const face of add) {
+      this.selection.add(face)
+      this.drawFace(face)
+    }
+    for (const face of remove) {
+      this.selection.delete(face)
+      this.drawFace(face)
+    }
   }
 
   /** Updates the state of the project (except the design)
@@ -191,8 +238,17 @@ export class AbstractionView {
     } else if (action instanceof FaceAdded) {
       const graphics = new Graphics()
       this.container.addChild(graphics)
-      this.faces.set(action.faceID, graphics)
-      this.drawFace(action.faceID)
+      const id = action.faceID
+      this.faces.set(id, graphics)
+      graphics.eventMode = 'static'
+      graphics.on('pointerdown', (ev) => {
+        if (!this.selectionEnabled) return
+        if (ev.shiftKey) {
+          if (this.selection.has(id)) this.setSelection(false, [], [id])
+          else this.setSelection(false, [id], [])
+        } else this.setSelection(true, [id], [])
+      })
+      this.drawFace(id)
       //
     } else if (action instanceof FaceChanged) {
       this.drawFace(action.faceID)

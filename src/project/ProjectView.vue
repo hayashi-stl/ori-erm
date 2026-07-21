@@ -55,3 +55,12 @@ function killContextMenu(ev: PointerEvent) {
 <template>
   <div id="workspace" ref="workspace" @contextmenu="killContextMenu"></div>
 </template>
+
+<style lang="scss" scoped>
+#workspace {
+  height: 100%;
+  width: 100%;
+  flex-grow: 1;
+  flex-shrink: 1;
+}
+</style>

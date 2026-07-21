@@ -6,8 +6,8 @@ import { Matrix } from 'pixi.js'
 
 /** Stores a grid. For now, only rectangular grids. */
 export class Grid {
-  private width: Int
-  private height: Int
+  readonly width: Int
+  readonly height: Int
 
   constructor(width: Int, height: Int) {
     this.width = width

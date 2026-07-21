@@ -6,6 +6,7 @@ import { ref } from 'vue'
 
 function setLanguage(language: Language) {
   Config.config.language = language
+  document.documentElement.lang = translate((t) => t.code).value // abuse of this function
 }
 
 function setTheme(theme: Theme) {

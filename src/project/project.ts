@@ -4,15 +4,21 @@ import { ref, shallowReactive, type Ref, type ShallowReactive } from 'vue'
 import { translate } from '@/config'
 import { Container, type Renderer } from 'pixi.js'
 
+/** The abstraction editing modes of a project */
+export enum AbstractionMode {
+  Select,
+  Rectangle,
+}
+
 /** A project contains a design and stuff needed to manage it. */
 export class Project {
   name: Ref<string>
-  private design: Design
-  private undoStack: UndoStack
-  private renderer: Renderer
-  private parent: Container
-  private container: Container
-  private abstractionView: AbstractionView
+  design: Design
+  undoStack: UndoStack
+  renderer: Renderer
+  parent: Container
+  container: Container
+  abstractionView: AbstractionView
 
   constructor(design: Design, renderer: Renderer, parent: Container) {
     this.name = ref(translate((t) => t.untitled).value)
@@ -21,7 +27,7 @@ export class Project {
     this.parent = parent
     this.undoStack = new UndoStack(this.update.bind(this))
     this.container = new Container()
-    this.abstractionView = new AbstractionView(design, renderer, this.container, this.undoStack)
+    this.abstractionView = new AbstractionView(this)
   }
 
   /** Make a new empty project. Initialized to `undefined` because
@@ -31,12 +37,18 @@ export class Project {
 
   show() {
     this.parent.addChild(this.container)
+    this.abstractionView.setMode(Project.abstractionMode)
     this.abstractionView.show()
     this.render()
   }
 
   hide() {
     this.container.removeFromParent()
+  }
+
+  /** Pushes an action to the project's undo stack */
+  pushAction(action: Action) {
+    this.undoStack.push(action)
   }
 
   undo() {
@@ -63,26 +75,22 @@ export class Project {
     this.abstractionView.render()
   }
 
+  static abstractionModeRef = ref(AbstractionMode.Rectangle)
+  /* prettier-ignore */ static get abstractionMode() { return this.abstractionModeRef.value }
+  static set abstractionMode(v) {
+    this.abstractionModeRef.value = v
+    Project.activeProject?.abstractionView.setMode(this.abstractionMode)
+  }
+
   /** All open projects. */
   private static projects_: ShallowReactive<Project[]> = shallowReactive([])
   /** -1 indicates no active project */
   private static activeProjectIndex_ = ref(-1)
 
-  static get projects() {
-    return this.projects_
-  }
-
-  static get activeProjectIndexRef() {
-    return this.activeProjectIndex_
-  }
-
-  static get activeProjectIndex() {
-    return this.activeProjectIndex_.value
-  }
-
-  static get activeProject() {
-    return this.projects[this.activeProjectIndex]
-  }
+  /* prettier-ignore */ static get projects() { return this.projects_ }
+  /* prettier-ignore */ static get activeProjectIndexRef() { return this.activeProjectIndex_ }
+  /* prettier-ignore */ static get activeProjectIndex() { return this.activeProjectIndex_.value }
+  /* prettier-ignore */ static get activeProject() { return this.projects[this.activeProjectIndex] }
 
   /** Set the active project index and update the interface. */
   static set activeProjectIndex(index: number) {

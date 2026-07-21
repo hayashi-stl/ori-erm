@@ -2,6 +2,7 @@ import type { Int } from '@/math/fraction'
 import { Grid } from './grid'
 import type { Polygon } from '@/math/geometry'
 import type { Mtx2x3 } from '@/math/linear'
+import { shallowReactive, shallowRef, type ShallowReactive, type ShallowRef } from 'vue'
 
 ///** A face in an abstraction. Usually a rectangle. */
 //export class Face {
@@ -31,6 +32,7 @@ type Target = { target: Face; edges: [Int, Int] }
  * position and connections.
  */
 export class Face {
+  name: string
   /** The polygon */
   polygon: Polygon
   /** Whether this is a backside face */
@@ -41,7 +43,8 @@ export class Face {
   targets: Target[]
 
   /** Beware: this aliases */
-  constructor(polygon: Polygon, back: boolean, transform: Mtx2x3, targets: Target[]) {
+  constructor(name: string, polygon: Polygon, back: boolean, transform: Mtx2x3, targets: Target[]) {
+    this.name = name
     this.polygon = polygon
     this.back = back
     this.transform = transform
@@ -50,7 +53,7 @@ export class Face {
 
   /** Creates an unconnected face */
   static unconnected(polygon: Polygon, back: boolean, transform: Mtx2x3) {
-    return new Face(polygon, back, transform, [])
+    return new Face('', polygon, back, transform, [])
   }
 }
 
@@ -58,7 +61,7 @@ export type FaceID = number
 
 /** An abstraction: the object you want to represent */
 export class Abstraction {
-  faces: Map<FaceID, Face> = new Map()
+  faces: ShallowReactive<Map<FaceID, Face>> = shallowReactive(new Map())
   currID: number = 0
 
   private nextID(): number {
@@ -86,10 +89,20 @@ export class Abstraction {
 
 /** The structure of an ERM project: grid size, abstraction, layout, all the good stuff */
 export class Design {
-  grid: Grid = new Grid(16, 16)
+  /* prettier-ignore */ gridRef: ShallowRef<Grid> = shallowRef(new Grid(16, 16))
+  /* prettier-ignore */ get grid() { return this.gridRef.value }
+  /* prettier-ignore */ private set grid(v) { this.gridRef.value = v }
+
   abstraction: Abstraction = Abstraction.new()
 
   private constructor() {}
+
+  /** Sets the grid and returns the corresponding action. */
+  setGrid(grid: Grid): GridChanged {
+    const action = new GridChanged(this.grid)
+    this.gridRef.value = grid
+    return action
+  }
 
   /** Initialization by fields for convenience. TODO: Error checking. */
   static from(init?: Partial<Design>): Design {
@@ -115,7 +128,7 @@ export class GridChanged implements Action {
 
   undo(design: Design): Action {
     const result = new GridChanged(design.grid)
-    design.grid = this.grid
+    design.gridRef.value = this.grid
     return result
   }
 }

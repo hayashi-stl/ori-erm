@@ -16,8 +16,8 @@ function redo() {
   <ImageDropdown
     :name="translate((t) => t.toolbarEdit)"
     :items="[
-      { text: translate((t) => t.toolbarUndo), click: undo },
-      { text: translate((t) => t.toolbarRedo), click: redo },
+      { text: translate((t) => t.toolbarUndo + ' (Ctrl+Z)'), click: undo },
+      { text: translate((t) => t.toolbarRedo + ' (Ctrl+Y)'), click: redo },
     ]"
   />
 </template>

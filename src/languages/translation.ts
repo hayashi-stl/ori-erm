@@ -1,4 +1,6 @@
 export type Translation = {
+  code: string
+
   toolbarFile: string
   toolbarNewProject: string
   toolbarCloseProject: string
@@ -12,4 +14,19 @@ export type Translation = {
   toolbarDarkMode: string
 
   untitled: string
+
+  toolSelect: string
+  toolRectangle: string
+
+  integerInput: string
+
+  sidebarGrid: string
+  gridWidth: string
+  gridHeight: string
+  gridDecreaseWidth: string
+  gridIncreaseWidth: string
+  gridDecreaseHeight: string
+  gridIncreaseHeight: string
+  sidebarPolygon: string
+  polygonName: string
 }

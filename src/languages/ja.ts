@@ -1,6 +1,8 @@
 import type { Translation } from './translation'
 
 export const JAPANESE: Translation = {
+  code: 'ja',
+
   toolbarFile: 'ファイル',
   toolbarNewProject: '新規プロジェクト',
   toolbarCloseProject: 'プロジェクトを閉じる',
@@ -14,4 +16,19 @@ export const JAPANESE: Translation = {
   toolbarDarkMode: 'ダークモード',
 
   untitled: '無題',
+
+  toolSelect: '選択',
+  toolRectangle: '矩形',
+
+  integerInput: '${min}以上${max}以下の整数を入力',
+
+  sidebarGrid: 'グリッド',
+  gridWidth: '幅',
+  gridHeight: '高さ',
+  gridDecreaseWidth: '幅を下げる',
+  gridIncreaseWidth: '幅を上げる',
+  gridDecreaseHeight: '高さを下げる',
+  gridIncreaseHeight: '高さを上げる',
+  sidebarPolygon: '多角形',
+  polygonName: '名前',
 }

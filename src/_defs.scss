@@ -21,22 +21,56 @@ $text-color: (
 
 $bar-color: (
   'light': lightgray,
-  'dark': #404080,
+  'dark': #202060,
 );
 $hover-color: (
   'light': #c8c8c8,
-  'dark': #484890,
+  'dark': #24246c,
 );
 $active-color: (
   'light': #b0b0b0,
-  'dark': #5858b0,
+  'dark': #2c2c84,
 );
 $border-color: (
   'light': gray,
-  'dark': #6060c0,
+  'dark': #303090,
 );
 
-$text-size: 12pt;
+$button-color: (
+  'light': #e9e9ed,
+  'dark': #303070,
+);
+$button-border: (
+  'light': #8f8f9d,
+  'dark': #6060e0,
+);
+$button-hover-color: (
+  'light': #d0d0d7,
+  'dark': #4848a8,
+);
+$button-hover-border: (
+  'light': #676774,
+  'dark': #6060e0,
+);
+$button-active-color: (
+  'light': #b1b1b9,
+  'dark': #20204a,
+);
+$button-active-border: (
+  'light': #484851,
+  'dark': #404095,
+);
+
+$text-input-color: (
+  'light': white,
+  'dark': #003,
+);
+$text-input-border: (
+  'light': #8f8f9d,
+  'dark': #6060e0,
+);
+
+$text-size: 10pt;
 
 @mixin button-color($theme) {
   background-color: map.get($bar-color, $theme);
