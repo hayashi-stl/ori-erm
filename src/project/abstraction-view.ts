@@ -14,7 +14,9 @@ import { Icon } from './icon'
 import { Polygon } from '@/math/geometry'
 import { Rat } from '@/math/fraction'
 import { AbstractionMode, type Project } from './project'
-import { shallowReactive, type ShallowReactive } from 'vue'
+import type { Selectable } from '@/drawable/selectable'
+import { MountableManager } from '@/drawable/mountableManager'
+import { SelectableManager } from '@/drawable/selectableManager'
 
 interface State {
   cleanup(): void
@@ -93,12 +95,11 @@ class StSelect implements State {
 
   constructor(view: AbstractionView) {
     this.view = view
-    this.view.selectionEnabled = true
+    this.view.selectableManager.enable()
   }
 
   cleanup(): void {
-    this.view.setSelection(true, [], [])
-    this.view.selectionEnabled = false
+    this.view.selectableManager.disable()
   }
 }
 
@@ -118,10 +119,10 @@ export class AbstractionView {
   container: Container
   transform: Matrix
   grid: Graphics
-  faces: Map<FaceID, Graphics> = new Map()
+  faces: Map<FaceID, Selectable> = new Map()
   state: State
-  selectionEnabled: boolean = false
-  selection: ShallowReactive<Set<FaceID>> = shallowReactive(new Set())
+  mountableManager: MountableManager
+  selectableManager: SelectableManager
 
   /* prettier-ignore */ get renderer() { return this.project.renderer }
   /* prettier-ignore */ get design() { return this.project.design }
@@ -140,6 +141,10 @@ export class AbstractionView {
     // right now the container's size is 0
     this.container.hitArea = this.renderer.screen
     this.container.eventMode = 'static'
+
+    this.mountableManager = new MountableManager()
+    this.selectableManager = new SelectableManager(this.mountableManager)
+    this.selectableManager.disable()
     this.state = new StDraw(this)
   }
 
@@ -171,21 +176,6 @@ export class AbstractionView {
     return action.faceID
   }
 
-  private drawFace(faceID: FaceID) {
-    const face = this.design.abstraction.faces.get(faceID)!
-    const transform = face.transform.toPixi().prepend(this.transform)
-    const graphics = this.faces.get(faceID)!
-    graphics
-      .clear()
-      .setTransform(transform)
-      .poly(
-        face.polygon.points.map((p) => p.toPixi()),
-        true,
-      )
-      .fill(currTheme().abstractionFill)
-      .stroke({ width: this.selection.has(faceID) ? 3 : 1, color: currTheme().abstractionOutline })
-  }
-
   show() {
     this.parent.addChild(this.container)
   }
@@ -211,22 +201,6 @@ export class AbstractionView {
     else if (mode === AbstractionMode.Rectangle) this.setState(StDraw.name, () => new StDraw(this))
   }
 
-  setSelection(clear: boolean, add: FaceID[], remove: FaceID[]) {
-    if (clear) {
-      const oldFaces = [...this.selection.values()]
-      this.selection.clear()
-      for (const face of oldFaces) this.drawFace(face)
-    }
-    for (const face of add) {
-      this.selection.add(face)
-      this.drawFace(face)
-    }
-    for (const face of remove) {
-      this.selection.delete(face)
-      this.drawFace(face)
-    }
-  }
-
   /** Updates the state of the project (except the design)
    * with an action that just got performed on the design
    */
@@ -236,25 +210,31 @@ export class AbstractionView {
       this.render()
       //
     } else if (action instanceof FaceAdded) {
-      const graphics = new Graphics()
-      this.container.addChild(graphics)
       const id = action.faceID
-      this.faces.set(id, graphics)
-      graphics.eventMode = 'static'
-      graphics.on('pointerdown', (ev) => {
-        if (!this.selectionEnabled) return
-        if (ev.shiftKey) {
-          if (this.selection.has(id)) this.setSelection(false, [], [id])
-          else this.setSelection(false, [id], [])
-        } else this.setSelection(true, [id], [])
+      const graphics = this.selectableManager.new(this.container, new Graphics(), (s) => {
+        const face = this.design.abstraction.faces.get(id)!
+        const transform = face.transform.toPixi().prepend(this.transform)
+        const graphics = s.container as Graphics
+        graphics
+          .clear()
+          .setTransform(transform)
+          .poly(
+            face.polygon.points.map((p) => p.toPixi()),
+            true,
+          )
+          .fill(currTheme().abstractionFill)
+          .stroke({
+            width: s.selected ? 3 : 1,
+            color: currTheme().abstractionOutline,
+          })
       })
-      this.drawFace(id)
+      this.faces.set(id, graphics)
       //
     } else if (action instanceof FaceChanged) {
-      this.drawFace(action.faceID)
+      this.faces.get(action.faceID)!.draw()
       //
     } else if (action instanceof FaceRemoved) {
-      this.faces.get(action.faceID)!.removeFromParent()
+      this.faces.get(action.faceID)!.destroy()
       this.faces.delete(action.faceID)
       //
     } else {
@@ -267,6 +247,6 @@ export class AbstractionView {
     this.transform = this.design.grid.transform(this.renderer)
     this.grid.clear().setTransform(this.transform)
     this.design.grid.draw(this.grid).stroke({ width: 1, color: currTheme().grid })
-    for (const face of this.design.abstraction.faces) this.drawFace(face[0])
+    this.mountableManager.draw()
   }
 }

@@ -1,17 +1,35 @@
 import type { Container } from 'pixi.js'
+import type { MountableManager } from './mountableManager'
 
 /** The base class for objects that can be mounted on the screen */
 export class Mountable {
   parent: Container
   container: Container
+  mountableManager: MountableManager | undefined
 
   /** Redraws the mountable */
-  draw: () => void
+  protected draw_: () => void
 
-  constructor(parent: Container, container: Container, draw: () => void) {
+  constructor(parent: Container, container: Container, draw: (self: Mountable) => void) {
     this.parent = parent
     this.container = container
-    this.draw = draw
+    this.draw_ = () => draw(this)
+    this.show()
+  }
+
+  removeFromMountableManager() {
+    this.mountableManager?.remove(this)
+  }
+
+  removeFromManagers() {
+    this.removeFromMountableManager()
+  }
+
+  /** Removes this mountable from all managers and destroys it */
+  destroy() {
+    this.removeFromManagers()
+    this.container.removeFromParent()
+    this.container.destroy()
   }
 
   hide() {
@@ -21,5 +39,9 @@ export class Mountable {
   show() {
     this.parent.addChild(this.container)
     this.draw()
+  }
+
+  draw() {
+    this.draw_()
   }
 }
