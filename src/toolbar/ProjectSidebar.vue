@@ -5,7 +5,7 @@ import { Grid } from '@/design/grid'
 import { M } from '@/keyboard'
 import type { Int } from '@/math/fraction'
 import { Project } from '@/project/project'
-import { computed } from 'vue'
+import { computed, useTemplateRef } from 'vue'
 import ToolMenu from './ToolMenu.vue'
 
 const width = computed(() => {
@@ -15,11 +15,19 @@ const height = computed(() => {
   return Project.activeProject?.design.gridRef.value.height || 16 // note: the left side can't be 0
 })
 
+const faceNameBox = useTemplateRef('faceNameBox')
+
 // The selected face, if there's exactly one
 const selectedFace = computed(() => {
-  const selection = Project.activeProject?.abstractionView.selection
+  const selection = Project.activeProject?.abstractionView.facesSelected
   if (selection === undefined || selection.size !== 1) return undefined
   return selection.values().next().value!
+})
+
+const faceName = computed(() => {
+  const faceID = selectedFace.value
+  if (faceID === undefined) return undefined
+  return Project.activeProject!.design.abstraction.faces.get(faceID)!.name
 })
 
 function onWidthChange(n: Int) {
@@ -33,6 +41,15 @@ function onHeightChange(n: Int) {
   const project = Project.activeProject
   if (project === undefined) return
   const action = project.design.setGrid(new Grid(project.design.grid.width, n))
+  project.pushAction(action)
+}
+
+function changeFaceName() {
+  const name = faceNameBox.value?.value
+  const faceID = selectedFace.value
+  if (faceID === undefined || name === undefined) return
+  const project = Project.activeProject! // since the faceID exists, this must exist
+  const action = project.design.abstraction.changeFace(faceID, (f) => (f.name = name))
   project.pushAction(action)
 }
 </script>
@@ -74,7 +91,13 @@ function onHeightChange(n: Int) {
       </div>
       <div v-if="selectedFace !== undefined" class="row">
         <div class="label">{{ translate((tr) => tr.polygonName) }}</div>
-        <input type="text" size="10" />
+        <input
+          type="text"
+          size="10"
+          ref="faceNameBox"
+          :value="faceName || ''"
+          @change="changeFaceName"
+        />
       </div>
     </div>
   </div>

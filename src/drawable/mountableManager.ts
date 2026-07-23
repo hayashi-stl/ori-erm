@@ -1,5 +1,6 @@
 import type { Container } from 'pixi.js'
 import { Mountable } from './mountable'
+import type { Tag } from './tag'
 
 /** Manages a group of mountables. Really only redraws everything when requested. */
 export class MountableManager {
@@ -8,8 +9,13 @@ export class MountableManager {
   constructor() {}
 
   /** Constructs a new mountable and adds it to the manager. */
-  new(parent: Container, container: Container, draw: (self: Mountable) => void): Mountable {
-    const mountable = new Mountable(parent, container, draw)
+  new(
+    tag: Tag,
+    parent: Container,
+    container: Container,
+    draw: (self: Mountable) => void,
+  ): Mountable {
+    const mountable = new Mountable(tag, parent, container, draw)
     this.add(mountable)
     return mountable
   }

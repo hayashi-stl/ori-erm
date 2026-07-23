@@ -1,13 +1,14 @@
 import type { Container } from 'pixi.js'
 import { Mountable } from './mountable'
 import type { SelectableManager } from './selectableManager'
+import type { Tag } from './tag'
 
 export class Selectable extends Mountable {
   selected: boolean = false
   selectableManager: SelectableManager | undefined
 
-  constructor(parent: Container, container: Container, draw: (self: Selectable) => void) {
-    super(parent, container, () => {})
+  constructor(tag: Tag, parent: Container, container: Container, draw: (self: Selectable) => void) {
+    super(tag, parent, container, () => {})
     this.draw_ = () => draw(this)
     this.draw()
     container.eventMode = 'static'

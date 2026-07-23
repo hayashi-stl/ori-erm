@@ -28,6 +28,10 @@ import { shallowReactive, shallowRef, type ShallowReactive, type ShallowRef } fr
 
 type Target = { target: Face; edges: [Int, Int] }
 
+function target(target: Face, edges: [Int, Int]): Target {
+  return { target: target, edges: edges }
+}
+
 /** An entry storing per-face data relevant to the abstraction such as the polygon,
  * position and connections.
  */
@@ -49,6 +53,16 @@ export class Face {
     this.back = back
     this.transform = transform
     this.targets = targets
+  }
+
+  clone(): Face {
+    return new Face(
+      this.name,
+      this.polygon.clone(),
+      this.back,
+      this.transform.clone(),
+      this.targets.map((t) => target(t.target, [...t.edges])),
+    )
   }
 
   /** Creates an unconnected face */
@@ -84,6 +98,16 @@ export class Abstraction {
     const id = this.nextID()
     this.faces.set(id, face)
     return new FaceAdded(id)
+  }
+
+  /** Modifies a face with a function that modifies the face in place,
+   * and returns the corresponding action. Expects the face to exist.
+   */
+  changeFace(id: FaceID, change: (face: Face) => void): FaceChanged {
+    const face = this.faces.get(id)!
+    const old = face.clone()
+    change(face)
+    return new FaceChanged(id, old)
   }
 }
 

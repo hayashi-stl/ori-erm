@@ -1,6 +1,8 @@
+import { Point } from 'pixi.js'
 import { type Int } from './fraction'
 import { Vec2 } from './linear'
 import { mod } from './math'
+import 'pixi.js/math-extras'
 
 /** A polygon, which is a sequence of points. Polygons are assumed to be closed. */
 export class Polygon {
@@ -82,5 +84,29 @@ export class Polygon {
     }
 
     return true
+  }
+
+  /** Gets the approximate center of mass of the polygon; useful for e.g. rendering.
+   * The approximation is computed by converting everything to floats first
+   */
+  centerOfMassApprox(): Point {
+    const points = this.points.map((p) => p.toPixi())
+    const sumCenters = new Point(0, 0)
+    let sumWeights = 0
+    for (let i = 1; i < points.length; ++i) {
+      const p0 = points[0]!
+      const p1 = points[i]!
+      const p2 = points[(i + 1) % points.length]!
+      const weight = p1.subtract(p0).cross(p2.subtract(p0))
+      sumCenters.add(
+        p0
+          .add(p1)
+          .add(p2)
+          .multiplyScalar(weight / 3),
+        sumCenters,
+      )
+      sumWeights += weight
+    }
+    return sumCenters.multiplyScalar(1 / sumWeights)
   }
 }

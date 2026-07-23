@@ -9,7 +9,7 @@ import {
   type FaceID,
 } from '@/design/design'
 import { Mtx2x3, Vec2 } from '@/math/linear'
-import { Container, FederatedPointerEvent, Graphics, Matrix, Point } from 'pixi.js'
+import { Container, FederatedPointerEvent, Graphics, HTMLText, Matrix, Point, Text } from 'pixi.js'
 import { Icon } from './icon'
 import { Polygon } from '@/math/geometry'
 import { Rat } from '@/math/fraction'
@@ -17,6 +17,9 @@ import { AbstractionMode, type Project } from './project'
 import type { Selectable } from '@/drawable/selectable'
 import { MountableManager } from '@/drawable/mountableManager'
 import { SelectableManager } from '@/drawable/selectableManager'
+import * as tag from '@/drawable/tag'
+import { shallowReactive, type ShallowReactive } from 'vue'
+import type { Theme } from '@/themes/theme'
 
 interface State {
   cleanup(): void
@@ -120,6 +123,7 @@ export class AbstractionView {
   transform: Matrix
   grid: Graphics
   faces: Map<FaceID, Selectable> = new Map()
+  facesSelected: ShallowReactive<Set<FaceID>> = shallowReactive(new Set())
   state: State
   mountableManager: MountableManager
   selectableManager: SelectableManager
@@ -145,6 +149,13 @@ export class AbstractionView {
     this.mountableManager = new MountableManager()
     this.selectableManager = new SelectableManager(this.mountableManager)
     this.selectableManager.disable()
+    this.selectableManager.onSelect = (item) => {
+      if (item.tag.type === 'face') this.facesSelected.add(item.tag.faceID)
+    }
+    this.selectableManager.onDeselect = (item) => {
+      if (item.tag.type === 'face') this.facesSelected.delete(item.tag.faceID)
+    }
+    this.selectableManager.onClear = () => this.facesSelected.clear()
     this.state = new StDraw(this)
   }
 
@@ -211,10 +222,17 @@ export class AbstractionView {
       //
     } else if (action instanceof FaceAdded) {
       const id = action.faceID
-      const graphics = this.selectableManager.new(this.container, new Graphics(), (s) => {
+      const container = new Container()
+      const polygon = new Graphics()
+      const text = new Text()
+      text.anchor = new Point(0.5, 0.5)
+      text.eventMode = 'none'
+      container.addChild(polygon, text)
+      const prevTheme: [Theme | undefined] = [undefined]
+      const graphics = this.selectableManager.new(tag.face(id), this.container, container, (s) => {
         const face = this.design.abstraction.faces.get(id)!
         const transform = face.transform.toPixi().prepend(this.transform)
-        const graphics = s.container as Graphics
+        const graphics = s.container.getChildAt<Graphics>(0)
         graphics
           .clear()
           .setTransform(transform)
@@ -227,6 +245,18 @@ export class AbstractionView {
             width: s.selected ? 3 : 1,
             color: currTheme().abstractionOutline,
           })
+        const text = s.container.getChildAt<Text>(1)
+        text.position = transform.apply(face.polygon.centerOfMassApprox())
+        // Don't rerender the text if it didn't change
+        if (face.name !== text.text || prevTheme[0] !== currTheme()) {
+          prevTheme[0] = currTheme()
+          text.text = face.name
+          text.style = {
+            fill: currTheme().textFill,
+            stroke: { color: currTheme().textStroke, width: 3 },
+            fontSize: '15pt',
+          }
+        }
       })
       this.faces.set(id, graphics)
       //

@@ -8,6 +8,8 @@ export type Theme = {
   cursor: Color
   abstractionFill: Color
   abstractionOutline: Color
+  textStroke: Color
+  textFill: Color
 }
 
 export const TSAI: Theme = {
@@ -18,6 +20,8 @@ export const TSAI: Theme = {
   cursor: new Color('black'),
   abstractionFill: new Color('#0096fe'),
   abstractionOutline: new Color('black'),
+  textStroke: new Color('white'),
+  textFill: new Color('black'),
 }
 
 export const LAYERS: Theme = {
@@ -28,4 +32,6 @@ export const LAYERS: Theme = {
   cursor: new Color('#0aa'),
   abstractionFill: new Color('#08f'),
   abstractionOutline: new Color('white'),
+  textStroke: new Color('#003'),
+  textFill: new Color('white'),
 }
