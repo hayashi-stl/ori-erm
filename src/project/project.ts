@@ -19,6 +19,12 @@ export class Project {
   parent: Container
   container: Container
   abstractionView: AbstractionView
+  zoomRef: Ref<number> = ref(1)
+  /* prettier-ignore */ get zoom() { return this.zoomRef.value }
+  set zoom(v) {
+    this.zoomRef.value = v
+    this.render()
+  }
 
   constructor(design: Design, renderer: Renderer, parent: Container) {
     this.name = ref(translate((t) => t.untitled).value)

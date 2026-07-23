@@ -23,10 +23,13 @@ export type Translation = {
   sidebarGrid: string
   gridWidth: string
   gridHeight: string
+  gridZoom: string
   gridDecreaseWidth: string
   gridIncreaseWidth: string
   gridDecreaseHeight: string
   gridIncreaseHeight: string
+  gridZoomOut: string
+  gridZoomIn: string
   sidebarPolygon: string
   polygonName: string
 }

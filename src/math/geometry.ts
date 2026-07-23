@@ -36,7 +36,7 @@ export class Polygon {
   at(index: Int): Vec2 {
     // Because of how `at` works, this works even with
     // negative `index` and silly truncation modulo.
-    return this.points.at(index % this.length)!
+    return this.points[index % this.length]!
   }
 
   /** Rotate the points so that point `index` moves to position 0. */

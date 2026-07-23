@@ -9,7 +9,7 @@ import {
   type FaceID,
 } from '@/design/design'
 import { Mtx2x3, Vec2 } from '@/math/linear'
-import { Container, FederatedPointerEvent, Graphics, HTMLText, Matrix, Point, Text } from 'pixi.js'
+import { Container, FederatedPointerEvent, Graphics, Matrix, Point, Text } from 'pixi.js'
 import { Icon } from './icon'
 import { Polygon } from '@/math/geometry'
 import { Rat } from '@/math/fraction'
@@ -131,6 +131,7 @@ export class AbstractionView {
   /* prettier-ignore */ get renderer() { return this.project.renderer }
   /* prettier-ignore */ get design() { return this.project.design }
   /* prettier-ignore */ get parent() { return this.project.container }
+  /* prettier-ignore */ get zoom() { return this.project.zoom }
 
   /** Constructs an abstraction view for a specific project under a parent container */
   constructor(project: Project) {
@@ -230,7 +231,9 @@ export class AbstractionView {
       container.addChild(polygon, text)
       const prevTheme: [Theme | undefined] = [undefined]
       const graphics = this.selectableManager.new(tag.face(id), this.container, container, (s) => {
-        const face = this.design.abstraction.faces.get(id)!
+        const face = this.design.abstraction.faces.get(id)
+        // This can be called when the face is gone, i.e. right before deletion
+        if (face === undefined) return
         const transform = face.transform.toPixi().prepend(this.transform)
         const graphics = s.container.getChildAt<Graphics>(0)
         graphics
@@ -247,13 +250,16 @@ export class AbstractionView {
           })
         const text = s.container.getChildAt<Text>(1)
         text.position = transform.apply(face.polygon.centerOfMassApprox())
+        // Round to avoid blurry text
+        text.position.x = Math.round(text.position.x)
+        text.position.y = Math.round(text.position.y)
         // Don't rerender the text if it didn't change
         if (face.name !== text.text || prevTheme[0] !== currTheme()) {
           prevTheme[0] = currTheme()
           text.text = face.name
           text.style = {
             fill: currTheme().textFill,
-            stroke: { color: currTheme().textStroke, width: 3 },
+            stroke: { color: currTheme().textStroke, width: 3, miterLimit: 1.42 },
             fontSize: '15pt',
           }
         }
@@ -274,7 +280,7 @@ export class AbstractionView {
 
   render() {
     this.container.hitArea = this.renderer.screen
-    this.transform = this.design.grid.transform(this.renderer)
+    this.transform = this.design.grid.transform(this.renderer, this.zoom)
     this.grid.clear().setTransform(this.transform)
     this.design.grid.draw(this.grid).stroke({ width: 1, color: currTheme().grid })
     this.mountableManager.draw()

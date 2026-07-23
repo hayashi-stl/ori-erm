@@ -29,7 +29,7 @@ export const LAYERS: Theme = {
 
   background: new Color('#003'),
   grid: new Color('#007'),
-  cursor: new Color('#0aa'),
+  cursor: new Color('#fff'),
   abstractionFill: new Color('#08f'),
   abstractionOutline: new Color('white'),
   textStroke: new Color('#003'),

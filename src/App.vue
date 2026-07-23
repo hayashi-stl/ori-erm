@@ -3,18 +3,10 @@ import StatusBar from './StatusBar.vue'
 import ToolbarMenu from './toolbar/ToolbarMenu.vue'
 import ProjectView from './project/ProjectView.vue'
 import ProjectSidebar from './toolbar/ProjectSidebar.vue'
-import { onMounted } from 'vue'
 import { handleKeyDown } from './keyboard.ts'
 
 document.addEventListener('keydown', (ev) => {
   handleKeyDown(ev)
-})
-
-onMounted(() => {
-  // Prevent text input from sending key events
-  for (const textInput of document.getElementsByTagName('input'))
-    if (textInput.type === 'text')
-      textInput.addEventListener('keydown', (ev) => ev.stopPropagation())
 })
 </script>
 
@@ -114,6 +106,11 @@ body {
     &:active {
       background-color: map.get(defs.$button-active-color, $theme);
       border: map.get(defs.$button-active-border, $theme) 1px solid;
+    }
+    &:disabled {
+      background-color: map.get(defs.$button-disabled-color, $theme);
+      border: map.get(defs.$button-disabled-border, $theme) 1px solid;
+      color: map.get(defs.$button-disabled-text, $theme);
     }
   }
 }

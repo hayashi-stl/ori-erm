@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import IntegerInput from '@/components/IntegerInput.vue'
+import NumberInput from '@/components/NumberInput.vue'
 import { translate } from '@/config'
 import { Grid } from '@/design/grid'
 import { M } from '@/keyboard'
@@ -13,6 +13,9 @@ const width = computed(() => {
 })
 const height = computed(() => {
   return Project.activeProject?.design.gridRef.value.height || 16 // note: the left side can't be 0
+})
+const zoom = computed(() => {
+  return Project.activeProject?.zoomRef.value || 1 // note: the left side can't be 0
 })
 
 const faceNameBox = useTemplateRef('faceNameBox')
@@ -44,6 +47,22 @@ function onHeightChange(n: Int) {
   project.pushAction(action)
 }
 
+function onZoomChange(n: number) {
+  const project = Project.activeProject
+  if (project === undefined) return
+  project.zoom = n
+}
+
+/** Returns the step for the zoom control. This should grow like an exponential function
+ * with respect to the zoom, while not giving weird non-representable numbers like √2
+ */
+function zoomStep(zoom: number, increase: boolean): number {
+  const log = Math.floor(Math.log2(zoom))
+  let step = Math.pow(2, log - 2)
+  if (!increase && Math.floor(Math.log2(zoom - step)) < log) step /= 2
+  return step
+}
+
 function changeFaceName() {
   const name = faceNameBox.value?.value
   const faceID = selectedFace.value
@@ -63,9 +82,10 @@ function changeFaceName() {
       </div>
       <div class="grid-settings">
         <div class="label">{{ translate((tr) => tr.gridWidth) }}</div>
-        <IntegerInput
+        <NumberInput
           :min="1"
           :max="9999"
+          :integer="true"
           :value="width"
           :decrease-tooltip="translate((t) => t.gridDecreaseWidth + ' (Shift+A)').value"
           :increase-tooltip="translate((t) => t.gridIncreaseWidth + ' (Shift+D)').value"
@@ -74,15 +94,30 @@ function changeFaceName() {
           @change="onWidthChange"
         />
         <div class="label">{{ translate((tr) => tr.gridHeight) }}</div>
-        <IntegerInput
+        <NumberInput
           :min="1"
           :max="9999"
+          :integer="true"
           :value="height"
           :decrease-tooltip="translate((t) => t.gridDecreaseHeight + ' (Shift+S)').value"
           :increase-tooltip="translate((t) => t.gridIncreaseHeight + ' (Shift+W)').value"
           :decrease-key="[M.Shift, 'KeyS']"
           :increase-key="[M.Shift, 'KeyW']"
           @change="onHeightChange"
+        />
+        <div class="label">{{ translate((tr) => tr.gridZoom) }}</div>
+        <NumberInput
+          :min="1"
+          :max="64"
+          :step="zoomStep"
+          :precision="2"
+          :integer="false"
+          :value="zoom"
+          :decrease-tooltip="translate((t) => t.gridZoomOut + ' (Ctrl+-)').value"
+          :increase-tooltip="translate((t) => t.gridZoomIn + ' (Ctrl+=)').value"
+          :decrease-key="[M.Ctrl, 'Equal']"
+          :increase-key="[M.Ctrl, 'Minus']"
+          @change="onZoomChange"
         />
       </div>
       <div v-if="selectedFace !== undefined" class="space"></div>
@@ -93,6 +128,7 @@ function changeFaceName() {
         <div class="label">{{ translate((tr) => tr.polygonName) }}</div>
         <input
           type="text"
+          @keydown.stop
           size="10"
           ref="faceNameBox"
           :value="faceName || ''"

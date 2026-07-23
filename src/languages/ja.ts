@@ -25,10 +25,13 @@ export const JAPANESE: Translation = {
   sidebarGrid: 'グリッド',
   gridWidth: '幅',
   gridHeight: '高さ',
+  gridZoom: 'ズーム',
   gridDecreaseWidth: '幅を下げる',
   gridIncreaseWidth: '幅を上げる',
   gridDecreaseHeight: '高さを下げる',
   gridIncreaseHeight: '高さを上げる',
+  gridZoomOut: 'ズームアウト',
+  gridZoomIn: 'ズームイン',
   sidebarPolygon: '多角形',
   polygonName: '名前',
 }

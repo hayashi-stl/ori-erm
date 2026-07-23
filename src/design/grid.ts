@@ -14,15 +14,15 @@ export class Grid {
     this.height = height
   }
 
-  /** Get the transform that the grid should be drawn with on the given renderer */
-  transform(renderer: Renderer): Matrix {
+  /** Get the transform that the grid should be drawn with on the given renderer and zoom */
+  transform(renderer: Renderer, zoom: number): Matrix {
     const MARGIN = 12
     const width = (renderer.width - 2 * MARGIN) / this.width
     const height = (renderer.height - 2 * MARGIN) / this.height
     const scale = Math.floor(Math.min(width, height)) // keep grid intervals nice and even
-    return Matrix.IDENTITY.scale(scale, scale).translate(
-      renderer.width / 2 - (this.width / 2) * scale,
-      renderer.height / 2 - (this.height / 2) * scale,
+    return Matrix.IDENTITY.scale(scale * zoom, scale * zoom).translate(
+      renderer.width / 2 - (this.width / 2) * scale * zoom,
+      renderer.height / 2 - (this.height / 2) * scale * zoom,
     )
   }
 

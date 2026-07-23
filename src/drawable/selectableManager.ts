@@ -43,8 +43,8 @@ export class SelectableManager {
 
   /** Removes a selectable from only the `SelectableManager` */
   remove(selectable: Selectable) {
+    this.deselect(selectable)
     this.selectables.delete(selectable)
-    this.selection.delete(selectable)
     selectable.selectableManager = undefined
   }
 
@@ -56,7 +56,6 @@ export class SelectableManager {
   }
 
   deselect(selectable: Selectable) {
-    if (!this.enabled) return
     this.selection.delete(selectable)
     selectable.deselect()
     this.onDeselect(selectable)

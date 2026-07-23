@@ -25,10 +25,13 @@ export const ENGLISH: Translation = {
   sidebarGrid: 'Grid',
   gridWidth: 'Width',
   gridHeight: 'Height',
+  gridZoom: 'Zoom',
   gridDecreaseWidth: 'Decrease Width',
   gridIncreaseWidth: 'Increase Width',
   gridDecreaseHeight: 'Decrease Height',
   gridIncreaseHeight: 'Increase Height',
+  gridZoomOut: 'Zoom Out',
+  gridZoomIn: 'Zoom In',
   sidebarPolygon: 'Polygon',
   polygonName: 'Name',
 }
